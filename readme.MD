@@ -116,25 +116,112 @@ Utilizando a abordagem comportamental, onde o circuito deve ser descrito em term
 Além disso, vale mencionar a importancia da implementação da estrutura *case*, a qual descreve as condições de cada digíto hexadecimal para cada sequência dos 7 segmentos de forma rápida e prática. Vale salientar ainda que, em termos de projeto, a escolha "*default*" foi atribuida para quando nenhum dos dígitos hexadecimais registrados seja selecionado, onde no display, nenhum segmento será aceso. 
 
 # Problema 03
-Um decodificador 3×8 com entrada de habilitação utilizando fluxo de dados e operadores lógicos.
+Um decodificador 3x8 com entrada de habilitação utilizando fluxo de dados e operadores lógicos.
 
 ## Resolução
 
+Um decodificador 3x8 é um bloco lógico combinacional definido por 3 entradas e 8 saídas, onde para cada combinação das entradas, uma única saída será ativada. Dessa forma, a tabela verdade pode ser representada dessa forma:
+ 
+- TABELA VERDADE
+
+ *b2* | *b1* | *b0* |*e7*|*e6*|*e5*|*e4*|*e3*|*e2*|*e1*|*e0*| 
+ -----| -----| -----| -- | -- | -- | -- | -- | -- | -- | -- |  
+  0   |  0   |  0   | 0  | 0  | 0  | 0  | 0  | 0  | 0  | 1  |
+  0   |  0   |  1   | 0  | 0  | 0  | 0  | 0  | 0  | 1  | 0  |
+  0   |  1   |  0   | 0  | 0  | 0  | 0  | 0  | 1  | 0  | 0  |
+  0   |  1   |  1   | 0  | 0  | 0  | 0  | 1  | 0  | 0  | 0  |
+  1   |  0   |  0   | 0  | 0  | 0  | 1  | 0  | 0  | 0  | 0  |
+  1   |  0   |  1   | 0  | 0  | 1  | 0  | 0  | 0  | 0  | 0  |
+  1   |  1   |  0   | 0  | 1  | 0  | 0  | 0  | 0  | 0  | 0  |
+  1   |  1   |  1   | 1  | 0  | 0  | 0  | 0  | 0  | 0  | 0  |
+
 ## Descrição em *systemverilog*
+
+~~~
+module decodificador(
+    //colocando as entradas do decodificador 
+    input logic b0,b1,b2, //b2 = X, b1 = Y, b0 = Z
+    //colocando as saídas do decodificador
+    output logic e0, e1, e2, e3, e4, e5, e6, e7
+);
+    // atribuindo as expressões para cada saída do decodificador (as 8)
+    assign e0 = ((~b2)&(~b1)&(~b0));
+    assign e1 = ((~b2)&(~b1)&(b0));
+    assign e2 = ((~b2)&(b1)&(~b0));
+    assign e3 = ((~b2)&(b1)&(b0));
+    assign e4 = ((b2)&(~b1)&(~b0));
+    assign e5 = ((b2)&(~b1)&(b0));
+    assign e6 = ((b2)&(b1)&(~b0));
+    assign e7 = ((b2)&(b1)&(b0));
+endmodule 
+~~~
 
 # Problema 04
-Um multiplexador 4×1 utilizando fluxo de dados e operadores lógicos.
+Um multiplexador 4x1 utilizando fluxo de dados e operadores lógicos.
 
 ## Resolução
+O mux 4x1 é um bloco lógico combinacional contendo quatro entradas e uma única saída, onde as entradas são selecionadas a partir dos bits de seleção que compõe a chave seletora. Dessa forma, como o que determina as combinações das entradas são os bits de seleção, faz-se necessário criar uma tabela verdade relacionando os bits da chave seletora com a saída do mux. 
+
+- TABELA VERDADE 
+
+ *s1* | *s0* |  *f* |
+  --  |  --  | ---  |
+   0  |   0  | *i0* |
+   0  |   1  | *i1* |
+   1  |   0  | *i2* |
+   1  |   1  | *i3* |
+
+Como tratasse de uma abordagem por fluxo de dados e operadores lógicos, faz-se necessário encontrar a expressão que define a saída do mux. Uma vez que o multiplexador pode ser projetado com portas lógicas como mostra a figura a baixo, é possível encontrar a expressão lógica para a saída *f*.
+
+![P4_mux_logic](/Problema%2004/Problema%2004%20-%20Assets/mux_logic.jpg)
 
 ## Descrição em *systemverilog*
+~~~
+module mux(
+    //declarando as entradas 
+    input logic i0, i1, i2, i3,
+    //declarando a chave seletora (que são entradas também)
+    input logic s0, s1,
+    //declarando a saída
+    output logic f
+);
+    //atribuindo a expressão lógica para a saída do mux 4x1
+    assign f = (i0&(~s1)&(~s0)) | (i1&(~s1)&s0) | (i2&s1&(~s0)) | (i3&s1&s0);
+endmodule
+~~~
 
 # Problema 05
-Um multiplexador 4×1 de 8 bits utilizando abordagem comportamental e estrutura case.
+Um multiplexador 4x1 de 8 bits utilizando abordagem comportamental e estrutura case.
 
 ## Resolução
+O mesmo bloco combinacional será descrito, só que desta vez, será feito por meio de outra abordagem.
 
+Ao invés do circuito ser descrito em termos de suas expressões de saída, ele será descrito baseado no seu comportamento algorítmico, utilizando a estrutura "*case*" por meio dentro de um procedimento "*always*".
 ## Descrição em *systemverilog*
+
+~~~
+module mux2 (
+    //declarando as 4 entradas 
+    input logic [3:0] i,
+    //declarando os 2 bits seletores 
+    input logic [1:0] s,
+    //declarando a saída 
+    output logic f 
+);
+    always_comb begin
+        case (s)
+            2'b00 : f = i[0]; 
+            2'b01 : f = i[1];
+            2'b10 : f = i[2];
+            2'b11 : f = i[3];
+            //valor padrão caso a combinação de bits de seleção dê algo impossível
+            default: f = 1'b0; // saída = 0 
+        endcase 
+    end
+endmodule
+~~~
+
+Dessa vez, as entradas normais e entradas de seleção foram concatenadas e, com o procedimento "*always_comb*", fora utilizada a estrutura condicional "*case*". Contudo, note que a lógica por trás da descrição deste circuito combinacional ainda continua a mesma.
 
 # Problema 06
 Meio somador, utilizando abordagem por fluxo de dados e operadores lógicos.
