@@ -227,15 +227,43 @@ Dessa vez, as entradas normais e entradas de seleção foram concatenadas e, com
 Meio somador, utilizando abordagem por fluxo de dados e operadores lógicos.
 
 ## Resolução
+Também conhecido como *half adder*, tratasse de um circuito que soma duas entradas e a saída retorna a soma das duas entradas além do carry-out, bit necessário caso a soma seja 1+1.
 
 ## Descrição em *systemverilog*
+
+~~~
+module halfadder (
+    //definindo as entradas do half-adder
+    input logic a, b,
+    //definindo as saídas do half-adder
+    output logic s, cout
+);
+    //definindo as expressões das saídas do meio-somador
+    assign s = a ^ b;
+    assign cout = a & b;                                                                
+
+endmodule 
+~~~
 
 # Problema 07
 Somador completo, utilizando abordagem por fluxo de dados e operadores lógicos.
 
 ## Resolução
+Também conhecidos como *full-adder*, a única diferença entre os somadores completos para os meio-somadores é a presença da entrada de carry-in no bloco lógico.
 
 ## Descrição em *systemverilog*
+~~~
+module fulladder(
+    //declarando as entradas do full-adder
+    input logic a,b,cin, 
+    //declarando as saídas do full-adder
+    output logic s,cout
+);
+    //declarando as expressões de saída do full-adder
+    assign s = a ^ b ^ cin;
+    assign cout = (a&b) | (a&cin) | (b&cin); 
+endmodule
+~~~
 
 # Problema 08
 Somador de 4 bits com entrada de carry in, utilizando um conjunto de somadores completos e abordagem hierarquica.
