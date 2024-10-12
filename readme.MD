@@ -297,8 +297,7 @@ operadores aritméticos.
 # Problema 12
 Uma unidade lógico-aritmética com a seguinte tabela de operação utilizando a abordagem que desejar:
 
-~~
-
+~~~
 module neoalu(
     //bits do opcode
     input logic opc2, opc1, opc0,
@@ -321,7 +320,6 @@ module neoalu(
     assign s1 = s[1];
     assign s2 = s[2];
     assign s3 = s[3];
-
 
 always @(*) begin
      a1 = (~s3 & ~s2 & ~s1 & s0) | (~s3 & s2 & ~s1 & ~s0) | (s3 & s2 & ~s1 & s0) | (s3 & ~s2 & s1 & s0);
@@ -348,8 +346,7 @@ always @(*) begin
     endcase
 end
 endmodule
-
-~~
+~~~
 
 ![P12OPC](/Problema%2012/Problema%2012%20-%20Assets/opcode.jpg)
 
