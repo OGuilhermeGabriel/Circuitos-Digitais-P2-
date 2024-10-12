@@ -297,6 +297,60 @@ operadores aritméticos.
 # Problema 12
 Uma unidade lógico-aritmética com a seguinte tabela de operação utilizando a abordagem que desejar:
 
+~~
+
+module neoalu(
+    //bits do opcode
+    input logic opc2, opc1, opc0,
+    //entrada 8 bits de a
+    input logic [3:0] a,
+    //entrada 8 bits de b  
+    input logic [3:0] b,
+    //saída 8 bits da alu
+    output logic [3:0] s,
+    output logic a1,
+    output logic b1,
+    output logic c,
+    output logic d,
+    output logic e,
+    output logic f,
+    output logic g
+
+);
+    assign s0 = s[0];
+    assign s1 = s[1];
+    assign s2 = s[2];
+    assign s3 = s[3];
+
+
+always @(*) begin
+     a1 = (~s3 & ~s2 & ~s1 & s0) | (~s3 & s2 & ~s1 & ~s0) | (s3 & s2 & ~s1 & s0) | (s3 & ~s2 & s1 & s0);
+     b1 = (~s0 & ((s3 & s2)|(s2 & s1)))|(s0 & ((~s3 & s2 & ~s1)|(s3 & s1)));
+     c = (~s3 & ~s2 & s1 & ~s0)|((s3 & s2) & (~s0|s1));
+     d = (~s3 & ~s2 & ~s1 & s0)|(~s3 & s2 & ~s1 & ~s0)|(s2 & s1 & s0)|(s3 & ~s2 & s1 & ~s0);
+     e = (s0 & (~s3|(~s2 & ~s1)))|(~s3 & s2 & ~s1);
+     f = ((~s3 & ~s2) & (s0|s1))|(~s3 & s1 & s0)|(s3 & s2 & ~s1 & s0);
+     g = (~s3 & ~s2 & ~s1)|(~s3 & s2 & s1 & s0)|(s3 & s2 & ~s1 & ~s0);
+
+    case ({opc2,opc1, opc0}) //concatenei aqui pra formar uma série de 3 bits
+        // cada operação relacionada à cada opcode será descrita aqui
+        // aplicando uma abordagem por fluxo de dados
+        3'b000: s = a | b; // a or b -> opcode = 000
+        3'b001: s = a & b; // a and b -> opcode = 001
+        3'b010: s = a ^ b; // a xor b -> opcode = 010
+        3'b011: s = ~a; // ~a -> opcode = 011
+        3'b100: s = a + b; // a + b -> opcode = 100
+        3'b101: s = a - b; // a - b -> opcode = 101
+        3'b110: s = a + 1; // a + 1 -> opcode = 110
+        3'b111: s = -a; // -a (comp de 2) -> opcode = 111
+        // caso padrão (default): recebe um valor de 8 bit indefido e diferente do opcode. Ou seja, caso padrão = fora do escopo do opcode = erro
+        default: s = 8'bx; // resultado inválido
+    endcase
+end
+endmodule
+
+~~
+
 ![P12OPC](/Problema%2012/Problema%2012%20-%20Assets/opcode.jpg)
 
 Sendo 𝐴 e 𝐵 dois números de 8 bits.
