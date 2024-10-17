@@ -197,6 +197,7 @@ Um multiplexador 4x1 de 8 bits utilizando abordagem comportamental e estrutura c
 O mesmo bloco combinacional será descrito, só que desta vez, será feito por meio de outra abordagem.
 
 Ao invés do circuito ser descrito em termos de suas expressões de saída, ele será descrito baseado no seu comportamento algorítmico, utilizando a estrutura "*case*" por meio dentro de um procedimento "*always*".
+
 ## Descrição em *systemverilog*
 
 ~~~
@@ -269,15 +270,77 @@ endmodule
 Somador de 4 bits com entrada de carry in, utilizando um conjunto de somadores completos e abordagem hierarquica.
 
 ## Resolução
+Para fazer o somador de 4 bits, será necessário primeiramente criar o módulo do somador completo para que, em seguida, seja possível criar o arquivo do somador de 4 bits, onde serão criadas 4 instâncias a partir deste módulo do *full-adder*. Dessa forma, por meio dos 4 blocos de *full-adders* criados, o *4 bits-adder* contará com entradas *a* e *b* e saída *s* de 4 bits, os quais conterão os valores das instâncias criadas a partir do módulo do *full-adder*.
 
 ## Descrição em *systemverilog*
+
+Primeiramente, será necessário descrever o módulo do somador completo
+
+~~~
+module fulladder (
+    //declarando as entradas do full-adder 
+    input logic a, b, cin,
+    //declarando as saídas do full-adder 
+    output logic s, cout 
+);
+    //declarando as expressões de saída do full-adder 
+    assign s = a ^ b ^ cin; 
+    assign cout = (a&b) | (a&cin) | (b&cin);
+endmodule 
+~~~
+
+Em outro arquivo, o somador de 4 bits será descrito
+
+~~~
+module quatrobitsadder (
+    // declarando as entradas do somador de 4 bits 
+    input logic [3:0] a, b,
+    // declarando o carry-in do somador 
+    input logic cin,
+    // declarando a saída da soma em 4 bits
+    output logic [3:0] s, 
+    // declarando o carry-out do somador 
+    output logic cout
+);
+    // declarando os sinais intermediários dos carrys
+    // ~ são os sinais de carry que estão ENTRE os blocos somadores 
+    logic c1, c2, c3; 
+
+    // instânciando os 4 full-adders 
+    fulladder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .s(s[0]), .cout(c1));
+    fulladder fa1 (.a(a[1]), .b(b[1]), .cin(c1), .s(s[1]), .cout(c2));
+    fulladder fa2 (.a(a[2]), .b(b[2]), .cin(c2), .s(s[2]), .cout(c3));
+    fulladder fa3 (.a(a[3]), .b(b[3]), .cin(c3), .s(s[3]), .cout(cout));
+
+endmodule
+~~~
 
 # Problema 09
 Somador de 8 bits com entrada de carry in, utilizando abordagem por fluxo de dados e operadores aritméticos.
 
 ## Resolução
+Dessa vez será um pouco mais simples de descrever o somador, uma vez que agora, tal bloco combinacional será descrito por meio das expressões que definem a saída do mesmo. Dessa forma, a expressão obtida será muito mais simples de ser representada por meio dos operadores aritméticos.
 
 ## Descrição em *systemverilog*
+
+~~~
+module oitobitsadder (
+    // declarando as entradas "a" e "b" em 8 bits do somador 
+    input logic [7:0] a, b,
+    // declarando o carry-in do somador
+    input logic cin,
+    // declarando a saída da soma do somador em 8 bits 
+    output logic [7:0] s, 
+    // declarando o carry-out do somador 
+    output logic cout
+);
+    // definindo as expressões para as saídas do somador 
+    // ~ usando operadores aritméticos 
+    assign s = a + b + cin; 
+    assign cout = a + b + cin; 
+    
+endmodule 
+~~~
 
 # Problema 10
 Um circuito que realiza, conjuntamente, as operações de soma e subtração entre números de 8 bits a partir de dois sinais de controle 𝑀, de tal forma que quando 𝑀 = 0 o circuito deverá realizar a soma dos dois números e quando 𝑀 = 1, o circuito realizará a subtração de dois números. Utilize o somador de 8 bits projetado no item (9) em conjunto com portas lógicas adicionais, utilizando a abordagem por hierarquia.
@@ -287,50 +350,52 @@ Um circuito que realiza, conjuntamente, as operações de soma e subtração ent
 ## Descrição em *systemverilog*
 
 # Problema 11
-Um circuito multiplicador de dois números de 8 bits, utilizando abordagem por fluxo de dados e
-operadores aritméticos.
+Um circuito multiplicador de dois números de 8 bits, utilizando abordagem por fluxo de dados e operadores aritméticos.
 
 ## Resolução
+A forma de descrever este circuito é similar ao problema 09.
 
 ## Descrição em *systemverilog*
+
+~~~
+module multiplicador (
+    // declarando as entradas em 8 bits
+    input logic [7:0] a, b,
+    // declarando a saída do multiplicador em 16 bits (dobro) 
+    output logic [15:0] p
+);
+    // definindo as expressões lógicas da sáida e do carry-out
+    assign p = a * b;
+endmodule 
+~~~
 
 # Problema 12
 Uma unidade lógico-aritmética com a seguinte tabela de operação utilizando a abordagem que desejar:
 
+![P12OPC](/Problema%2012/Problema%2012%20-%20Assets/opcode.jpg)
+
+Sendo 𝐴 e 𝐵 dois números de 8 bits.
+
+## Resolução
+
+Para este projeto será necessário utilizar a abordagem comportamental. Especificamente, será aplicado um procedimento *always* o qual irá definir por meio de uma estrutura *case*, todos as operações que a ALU irá fazer baseado nas combinações formadas pelos bits do *op code*.   
+
+## Descrição em *systemverilog*
+
 ~~~
 module neoalu(
-    //bits do opcode
+    //definindo os bits do opcode
     input logic opc2, opc1, opc0,
-    //entrada 8 bits de a
-    input logic [3:0] a,
-    //entrada 8 bits de b  
-    input logic [3:0] b,
+    //definindo a entrada 8 bits de a
+    input logic [7:0] a,
+    //definindo a entrada 8 bits de b  
+    input logic [7:0] b,
     //saída 8 bits da alu
-    output logic [3:0] s,
-    output logic a1,
-    output logic b1,
-    output logic c,
-    output logic d,
-    output logic e,
-    output logic f,
-    output logic g
-
+    output logic [7:0] s
 );
-    assign s0 = s[0];
-    assign s1 = s[1];
-    assign s2 = s[2];
-    assign s3 = s[3];
 
 always @(*) begin
-     a1 = (~s3 & ~s2 & ~s1 & s0) | (~s3 & s2 & ~s1 & ~s0) | (s3 & s2 & ~s1 & s0) | (s3 & ~s2 & s1 & s0);
-     b1 = (~s0 & ((s3 & s2)|(s2 & s1)))|(s0 & ((~s3 & s2 & ~s1)|(s3 & s1)));
-     c = (~s3 & ~s2 & s1 & ~s0)|((s3 & s2) & (~s0|s1));
-     d = (~s3 & ~s2 & ~s1 & s0)|(~s3 & s2 & ~s1 & ~s0)|(s2 & s1 & s0)|(s3 & ~s2 & s1 & ~s0);
-     e = (s0 & (~s3|(~s2 & ~s1)))|(~s3 & s2 & ~s1);
-     f = ((~s3 & ~s2) & (s0|s1))|(~s3 & s1 & s0)|(s3 & s2 & ~s1 & s0);
-     g = (~s3 & ~s2 & ~s1)|(~s3 & s2 & s1 & s0)|(s3 & s2 & ~s1 & ~s0);
-
-    case ({opc2,opc1, opc0}) //concatenei aqui pra formar uma série de 3 bits
+    case ({opc2,opc1, opc0}) //concatenei aqui pra formar uma série de 3 bits do opcode
         // cada operação relacionada à cada opcode será descrita aqui
         // aplicando uma abordagem por fluxo de dados
         3'b000: s = a | b; // a or b -> opcode = 000
@@ -340,18 +405,10 @@ always @(*) begin
         3'b100: s = a + b; // a + b -> opcode = 100
         3'b101: s = a - b; // a - b -> opcode = 101
         3'b110: s = a + 1; // a + 1 -> opcode = 110
-        3'b111: s = -a; // -a (comp de 2) -> opcode = 111
+        3'b111: s = b + 1; // b + 1 -> opcode = 111
         // caso padrão (default): recebe um valor de 8 bit indefido e diferente do opcode. Ou seja, caso padrão = fora do escopo do opcode = erro
         default: s = 8'bx; // resultado inválido
     endcase
 end
 endmodule
 ~~~
-
-![P12OPC](/Problema%2012/Problema%2012%20-%20Assets/opcode.jpg)
-
-Sendo 𝐴 e 𝐵 dois números de 8 bits.
-
-## Resolução
-
-## Descrição em *systemverilog*

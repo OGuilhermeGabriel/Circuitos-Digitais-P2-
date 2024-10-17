@@ -1,8 +1,8 @@
-module fulladder(
+module fulladder (
     //declarando as entradas do full-adder
-    input logic a,b,cin, 
+    input logic a, b, cin, 
     //declarando as saídas do full-adder
-    output logic s,cout
+    output logic s, cout
 );
     //declarando as expressões de saída do full-adder
     assign s = a ^ b ^ cin;
