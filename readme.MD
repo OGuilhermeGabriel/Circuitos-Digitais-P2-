@@ -18,12 +18,13 @@ Projeto direcionado à disciplina de Circuitos Digitais, ministrada pelo Prof Dr
 - [Problema 10](#problema-10)
 - [Problema 11](#problema-11)
 - [Problema 12](#problema-12)
+- [Referências](#referências)
 
 # Lista de Projetos 
 Implemente os seguintes circuitos em SystemVerilog utilizando a abordagem designada:
 
 # Problema 01
-Um circuito gerador de paridade impar de um número de 8 bits utilizando fluxo de dados e operadores lógicos.
+Um circuito gerador de paridade ímpar de um número de 8 bits utilizando fluxo de dados e operadores lógicos.
 
 ## Resolução
 Um gerador de paridade ímpar pode ser representado por um circuito composto por 8 entradas (para 8 bits) associados por XNOR's de forma cascata. Nesse sentido, a saída irá gerar um único bit: Caso a sequência de valores dos 8 bits tenha uma quantidade de 1's par, o bit de paridade gerado irá ter o valor 1. Caso a sequência de valores dos 8 bits tenha uma quantidade de 1's ímpar, o bit de paridade gerado irá ter o valor 0.
@@ -111,7 +112,7 @@ module display(
 endmodule 
 ~~~
 
-Utilizando a abordagem comportamental, onde o circuito deve ser descrito em termos do seu comportamento algoritmo, foi implementada então a estrutura *case* dentro do procedimento *always_comb*, sendo um procedimento *always* utilizado para mapear circuitos lógicos combinacionais, como este circuito o qual descreve o display. 
+Utilizando a abordagem comportamental, onde o circuito deve ser descrito em termos do seu comportamento algorítmico, foi implementada então a estrutura *case* dentro do procedimento *always_comb*, sendo um procedimento *always* utilizado para mapear circuitos lógicos combinacionais, como este circuito o qual descreve o display. 
 
 Além disso, vale mencionar a importancia da implementação da estrutura *case*, a qual descreve as condições de cada digíto hexadecimal para cada sequência dos 7 segmentos de forma rápida e prática. Vale salientar ainda que, em termos de projeto, a escolha "*default*" foi atribuida para quando nenhum dos dígitos hexadecimais registrados seja selecionado, onde no display, nenhum segmento será aceso. 
 
@@ -347,7 +348,110 @@ Um circuito que realiza, conjuntamente, as operações de soma e subtração ent
 
 ## Resolução
 
+Para projetar este circuito, será necessário ter uma boa interpretação e entender que com um mesmo somador de 8 bits, é possível criar um subtrator de 8 bits utilizando um conjunto de portas lógicas adicionais, especificamente, as portas XOR. Dessa forma, a partir do sinal de controle *M*, haverão momentos em que o *adder* irá se comportar como somador (*M* = 0) e haverão momentos em que o *adder* irá se comportar como subtrator (*M* = 0)  
+
+Inicialmente, podemos entender que em um somador, as entradas se  comportar de tal forma:
+
+*A + B*
+
+E em um subtrator temos que: 
+
+*A - B*
+
+Contudo, podemos interpretar esta subtração como a soma de *A* com o valor negativo de *B*. Portanto: 
+
+*A - B = A + (-B)*
+
+Consequentemente, quando for a hora do *adder* se comportar como subtrator ele irá simplesmente somar o valor de *A* com o valor negativo de *B*. Nesse sentido, o valor negativo de *B* será definido como o complemento de dois de *B*.
+
+Teoricamente, para realizar o complemento de dois, primeiramente inverte-se cada bit do sinal e, em seguida, soma-se mais 1.
+
+Na prática, as portas XOR's implementadas no circuito servem para inverter cada um dos 8 bits de *B* e no *carry-in*, é adicionado o valor de 1 para realizar o complemento de 2 de *B*.
+
+A imagem abaixo, tirada de uma aula no youtube (cujo link estará nas referências bibliográficas) representa esta mesma lógica sendo aplicada para 4 bits.
+
+![adder_sub](/Problema%2010/Problema%2010%20-%20Assets/fonte%20logica%20digital%20fabrica%20de%20noobs.jpg)
+
 ## Descrição em *systemverilog*
+
+Primeiramente, será criado um bloco menor o qual será responsável por descrever a estrutra do somador de 8 bits. Nesse caso, será reaproveitada a descrição do item (9), o qual já descreve um somador de 8 bits em termos de suas expressões. Só que, ao invés de pegar o somador de 8 bits já feito, este será instânciado por um bloco menor: por um somador de 1 bit.
+
+~~~
+// criando o módulo do menor bloco lógico: 1-bit adder 
+module umbitadder (
+    // entradas do somador de 1 bit
+    input logic a, b, cin,
+    // saídas do somador de 1 bit
+    output logic s, cout
+);
+    // atribuindo as expressões de saída, baseadas nas entradas
+    assign {s, cout} = a + b + cin; 
+    // concatenei "s" e "cout", já que a expressão é a mesma para os 2 bits 
+endmodule 
+
+// criando o módulo do 8-bits adder 
+module oitobitsadder (
+    // entradas A e B de 8 bits
+    input logic [7:0] A, B,
+    // cin
+    input logic cin,
+    // saída da soma de 8 bits 
+    output logic [7:0] s,
+    // cout
+    output logic cout
+);
+
+    // definindo o sinal intermediário de carry, o qual irá passar entre cada 1-bit adder
+    logic [7:0] carry;
+
+    // instanciando o 8-bits adder
+    umbitadder FA0 (.a(A[0]), .b(B[0]), .cin(cin), .s(s[0]), .cout(carry[0]));
+    umbitadder FA1 (.a(A[1]), .b(B[1]), .cin(carry[0]), .s(s[1]), .cout(carry[1]));
+    umbitadder FA2 (.a(A[2]), .b(B[2]), .cin(carry[1]), .s(s[2]), .cout(carry[2]));
+    umbitadder FA3 (.a(A[3]), .b(B[3]), .cin(carry[2]), .s(s[3]), .cout(carry[3]));
+    umbitadder FA4 (.a(A[4]), .b(B[4]), .cin(carry[3]), .s(s[4]), .cout(carry[4]));
+    umbitadder FA5 (.a(A[5]), .b(B[5]), .cin(carry[4]), .s(s[5]), .cout(carry[5]));
+    umbitadder FA6 (.a(A[6]), .b(B[6]), .cin(carry[5]), .s(s[6]), .cout(carry[6]));
+    umbitadder FA0 (.a(A[7]), .b(B[7]), .cin(carry[6]), .s(s[7]), .cout(cout)); 
+    // obs: carry[7] = cout
+endmodule
+~~~
+
+Em seguida, no módulo principal, será descrito o somador/subtrator, usando como base o somador de 8 bits.
+
+~~~
+// modulo principal -> é aqui que o somador/subtrator de 8 bits será descrito
+module main (
+    // declarando as entradas de 8 bits A e B
+    input logic [7:0] A, B,
+    // declarando o sinal de controle M como uma entrada do bloco lógico  
+    input logic M,
+    // declarando a saída do somador/subtrator => resultado da operação
+    output logic resultado, 
+    // cout 
+    output logic cout  
+);
+    // declarando os sinais intermediários: 
+    logic [7:0] B_c2;  // sinal responsável por inverter cada bit da entrada "B"
+    logic cin; // "cin" não será uma entrada mais sim um sinal intermediário. 
+    // Isso acontece pq "cin" estará ligado à entrada de controle M, para somar + 1, para fazer o complemento de 2, logo, "cin = M"
+
+    // CASO M = 1 -> INVERTE "B" [complemento de 2], SE NÃO -> B
+    assign B_c2 = B ^ {8{M}};
+    // implementando uma XOR pra cada bit de M, que será ou M = 00000000 (0) ou M = 11111111 (1) (precisa fazer isso para que a XOR consiga lidar com os 8 bits vindos de "B")
+    assign cin = M;
+
+    // INSTANCIANDO O 8-BITS ADDER/SUB, tendo como base o somador de 8-bits descrito anteriormente
+    oitobitsadder main (
+        .A(A),
+        .B(B),
+        .cin(cin),
+        .s(resultado),
+        .cout(cout)  
+    );
+
+endmodule
+~~~
 
 # Problema 11
 Um circuito multiplicador de dois números de 8 bits, utilizando abordagem por fluxo de dados e operadores aritméticos.
@@ -412,3 +516,7 @@ always @(*) begin
 end
 endmodule
 ~~~
+
+# Referências
+
+-  Fábrica de Noobs. Lógica Digital #17 - Somadores e Subtratores. YouTube, 16 de dez. de 2019. Disponível em: [Lógica Digital #17 - Somadores e Subtratores](https://www.youtube.com/watch?v=IQkYBmNVo_U). Acesso em: 22 de out. de 2024.
