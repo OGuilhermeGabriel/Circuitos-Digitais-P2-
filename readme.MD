@@ -348,7 +348,7 @@ Um circuito que realiza, conjuntamente, as operações de soma e subtração ent
 
 ## Resolução
 
-Para projetar este circuito, será necessário ter uma boa interpretação e entender que com um mesmo somador de 8 bits, é possível criar um subtrator de 8 bits utilizando um conjunto de portas lógicas adicionais, especificamente, as portas XOR. Dessa forma, a partir do sinal de controle *M*, haverão momentos em que o *adder* irá se comportar como somador (*M* = 0) e haverão momentos em que o *adder* irá se comportar como subtrator (*M* = 0)  
+Para projetar este circuito, será necessário ter uma boa interpretação e entender que com um mesmo somador de 8 bits, é possível criar um subtrator de 8 bits utilizando um conjunto de portas lógicas adicionais, especificamente, as portas XOR. Dessa forma, a partir do sinal de controle *M*, haverão momentos em que o *adder* irá se comportar como somador (*M* = 0) e haverão momentos em que o *adder* irá se comportar como subtrator (*M* = 1)  
 
 Inicialmente, podemos entender que em um somador, as entradas se  comportar de tal forma:
 
